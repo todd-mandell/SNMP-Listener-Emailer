@@ -45,7 +45,7 @@ namespace OpenITTools_SNMP_Listener_Emailer
                     string SNMPSubject = "SNMP Alert From " + SNMPEP + " " + SNMPPK;
                     string SNMPBody = "SNMP Alert From " + SNMPEP + " " + SNMPPK + " - " + output2;
                     string SNMPshortMsg = output2;
-                    string path = @"c:\snmp-log.txt";
+                    string path = @"c:\Users\" + Environment.UserName + "\\snmp-log.txt";
 
                     if (packet[0] == 0xff)
                     {
