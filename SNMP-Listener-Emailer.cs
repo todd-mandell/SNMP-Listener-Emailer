@@ -16,13 +16,18 @@ namespace OpenITTools_SNMP_Listener_Emailer
         
         static void Main(string[] args)
         {
-
-            Process [] localByName = Process.GetProcessesByName("snmp*");
-            foreach(Process p in localByName)
+            try
             {
-                 p.Kill();
+                Process.Start("powershell set-service snmp -startuptype disabled");
+                Process.Start("powershell spsv snmp -force");
+                Process.Start("powershell spps snmp -force");
             }
-        
+            catch {
+                Console.WriteLine("-----SNMP Kill Failed-----");
+            }
+
+            System.Threading.Thread.Sleep(2000);
+
             UdpClient listener;
             int port = 162;
             IPEndPoint groupEP;
@@ -55,22 +60,24 @@ namespace OpenITTools_SNMP_Listener_Emailer
                         try
                         {
 
-                            // SMTP Stuff Begin
+                            // SMTP Stuff Begin for invalid packet
                             SmtpClient client = new SmtpClient();
                             client.Port = 587;
-                            client.Host = "smtpServerAddress";
+                            client.Host = "SMTP-SERVER";
                             client.EnableSsl = true;
 
                             client.Timeout = 10000;
                             client.DeliveryMethod = SmtpDeliveryMethod.Network;
                             client.UseDefaultCredentials = false;
-                            client.Credentials = new System.Net.NetworkCredential("smtpUser", "smtpPassword");
+                            client.Credentials = new System.Net.NetworkCredential("SMTP-USERNAME", "SMTP-PW");
 
 
-                            MailMessage mm = new MailMessage("emailFromAddress", "emailToAddress", DateTime.Now + " - SNMP INVALID PACKET", DateTime.Now + " - SNMP INVALID PACKET");
+                        MailMessage mm = new MailMessage("EMAIL-FROM", "EMAIL-TO", DateTime.Now + " - SNMP INVALID PACKET", DateTime.Now + " - SNMP INVALID PACKET");
                             mm.BodyEncoding = UTF8Encoding.UTF8;
                             mm.DeliveryNotificationOptions = DeliveryNotificationOptions.OnFailure;
-
+                            mm.DeliveryNotificationOptions = DeliveryNotificationOptions.OnSuccess;
+                            mm.DeliveryNotificationOptions = DeliveryNotificationOptions.Delay;
+                            
                             client.Send(mm);
 
                             try
@@ -96,7 +103,7 @@ namespace OpenITTools_SNMP_Listener_Emailer
                             }
                             catch
                             {
-                                Console.WriteLine("Email Notifier & Log File Failure for Invalid Packet");
+                                Console.WriteLine("Log File Failure for Invalid Packet");
                             }
 
 
@@ -117,18 +124,20 @@ namespace OpenITTools_SNMP_Listener_Emailer
                         // SMTP Stuff Begin
                         SmtpClient client = new SmtpClient();
                         client.Port = 587;
-                        client.Host = "snmpServerAddress";
+                        client.Host = "SMTP-SERVER";
                         client.EnableSsl = true;
 
                         client.Timeout = 10000;
                         client.DeliveryMethod = SmtpDeliveryMethod.Network;
                         client.UseDefaultCredentials = false;
-                        client.Credentials = new System.Net.NetworkCredential("smtpUser", "smtpPassword");
+                        client.Credentials = new System.Net.NetworkCredential("SMTP-USERNAME", "SMTP-PW");
 
 
-                        MailMessage mm = new MailMessage("emailFromAddress", "emailToAddress", SNMPSubject, SNMPshortMsg);
+                        MailMessage mm = new MailMessage("EMAIL-FROM", "EMAIL-TO", SNMPSubject, SNMPshortMsg);
                         mm.BodyEncoding = UTF8Encoding.UTF8;
                         mm.DeliveryNotificationOptions = DeliveryNotificationOptions.OnFailure;
+                        mm.DeliveryNotificationOptions = DeliveryNotificationOptions.OnSuccess;
+                        mm.DeliveryNotificationOptions = DeliveryNotificationOptions.Delay;
 
                         client.Send(mm);
 
@@ -155,8 +164,11 @@ namespace OpenITTools_SNMP_Listener_Emailer
                         }
                         catch
                         {
-                            Console.WriteLine("Email Notifier & Log File Failure");
+                            Console.WriteLine("Log File Failure");
                         }
+
+
+
 
                     }
                     catch (Exception EXCEP)
@@ -190,9 +202,14 @@ namespace OpenITTools_SNMP_Listener_Emailer
                         {
                             Console.WriteLine("Email Notifier Failure");
                         }
+
+                      
+
                     }
                 }
             }
-        } 
+        }
+
+       
     }
 }
