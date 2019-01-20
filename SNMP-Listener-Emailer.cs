@@ -65,7 +65,7 @@ namespace OpenITTools_SNMP_Listener_Emailer
 
 
 
-                        //add the log file and emailer to this part too since invalid packets would be important
+                        //try to mail the invalid packets as well here
                         try
                         {
 
@@ -127,7 +127,7 @@ namespace OpenITTools_SNMP_Listener_Emailer
                                       if (!File.Exists(bufferPath))
                                 {
                                     // Create a file to write to.
-                                    using (StreamWriter sw = File.CreateText(bufferPath))
+                                    using (StreamWriter sw = File.AppendText(bufferPath))
                                     {
                                         sw.WriteLine(DateTime.Now + " - SNMP INVALID PACKET");                                        
                                     }
@@ -209,6 +209,7 @@ namespace OpenITTools_SNMP_Listener_Emailer
 
                                 bufferDump.Send(bufferMessage);
 
+                                File.Delete(bufferPath);
 
                             }
 
@@ -250,7 +251,7 @@ namespace OpenITTools_SNMP_Listener_Emailer
                             if (!File.Exists(bufferPath))
                             {
                                 // Create a file to write to.
-                                using (StreamWriter sw = File.CreateText(bufferPath))
+                                using (StreamWriter sw = File.AppendText(bufferPath))
                                 {
                                     sw.WriteLine(DateTime.Now + " ----- " + SNMPBody);
                                 }
@@ -272,7 +273,7 @@ namespace OpenITTools_SNMP_Listener_Emailer
                             if (!File.Exists(bufferPath))
                             {
                                 // Create a file to write to.
-                                using (StreamWriter sw = File.CreateText(bufferPath))
+                                using (StreamWriter sw = File.AppendText(bufferPath))
                                 {
                                     sw.WriteLine(DateTime.Now + " ----- " + SNMPBody);
                                 }
