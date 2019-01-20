@@ -40,13 +40,11 @@ namespace OpenITTools_SNMP_Listener_Emailer
             
             while (true)
             {
-
                 Console.WriteLine("Waiting for messages....");
                 packet = listener.Receive(ref groupEP);
                 Console.WriteLine("Processing new message...");
                 if (packet.Length != 0)
-                {
-                
+                {               
                     string output2 = Encoding.ASCII.GetString(packet);
                     string SNMPEP = groupEP.ToString(); 
                     string SNMPPK = packet + " - " + DateTime.Now;
@@ -56,19 +54,14 @@ namespace OpenITTools_SNMP_Listener_Emailer
                     string path = @"c:\snmp-log.txt"; // Users\" + Environment.UserName + "\\snmp-log.txt";
                     string bufferPath = @"c:\snmp-sendBuffer.txt";
                     
-
                     // if invalid packet found do this first
-
                     if (packet[0] == 0xff)
                     {
                         Console.WriteLine(DateTime.Now + " - Invalid Packet");
 
-
-
                         //try to mail the invalid packets as well here
                         try
                         {
-
                             string smtpFile = "c:\\SMTPINFO.txt";
                             //SecureString gave some difficulties here would like to implement that though
                             //SecureString ss = new NetworkCredential("", File.ReadLines(smtpFile).Skip(0).Take(1).First());
@@ -84,12 +77,10 @@ namespace OpenITTools_SNMP_Listener_Emailer
                             invalidPacket.Port = Int32.Parse(SMTPPORT);
                             invalidPacket.Host = SMTPHOSTURL;
                             invalidPacket.EnableSsl = true;
-
                             invalidPacket.Timeout = 10000;
                             invalidPacket.DeliveryMethod = SmtpDeliveryMethod.Network;
                             invalidPacket.UseDefaultCredentials = false;
                             invalidPacket.Credentials = new System.Net.NetworkCredential(USERNAME, PASSWORD);
-
 
                             MailMessage mm = new MailMessage(FROMADDRESS, TOADDRESS, DateTime.Now + " - SNMP INVALID PACKET", DateTime.Now + " - SNMP INVALID PACKET");
                             mm.BodyEncoding = UTF8Encoding.UTF8;
@@ -99,10 +90,10 @@ namespace OpenITTools_SNMP_Listener_Emailer
 
                             invalidPacket.Send(mm);
                             
+                            //log it
                             try
                             {
-
-                                // This text is added only once to the file.
+                                // This text is added only once to the file if it doesnt exist.
                                 if (!File.Exists(path))
                                 {
                                     // Create a file to write to.
@@ -127,28 +118,47 @@ namespace OpenITTools_SNMP_Listener_Emailer
                                       if (!File.Exists(bufferPath))
                                 {
                                     // Create a file to write to.
-                                    using (StreamWriter sw = File.AppendText(bufferPath))
+                                    using (StreamWriter sw = File.CreateText(bufferPath))
                                     {
-                                        sw.WriteLine(DateTime.Now + " - SNMP INVALID PACKET");                                        
+                                        sw.WriteLine(DateTime.Now + " - SNMP INVALID PACKET");       
                                     }
                                 }
 
-                              
+                                      // the append outside of the if to create.
+                                      using (StreamWriter sw = File.AppendText(bufferPath))
+                                      {
+                                          sw.WriteLine(DateTime.Now + " - SNMP INVALID PACKET");
+                                      }
+
                             }
-
-
                             return;
-
                         }
+                        //the invalid packet send's catch
                         catch
                         {
                             Console.WriteLine("Email Notifier Failure for Invalid Packet");
+
+                            // create and log to the buffer file begin
+                            if (!File.Exists(bufferPath))
+                            {
+                                // Create a file to write to.
+                                using (StreamWriter sw = File.CreateText(bufferPath))
+                                {
+                                    sw.WriteLine(DateTime.Now + " - SNMP INVALID PACKET");
+                                }
+                            }
+
+                            // the append outside of the if to create.
+                            using (StreamWriter sw = File.AppendText(bufferPath))
+                            {
+                                sw.WriteLine(DateTime.Now + " - SNMP INVALID PACKET");
+                            }
+
                         }
                     } //end the if here - since we need to be notified of invalid packets too
 
                     Console.WriteLine(packet + " - " + DateTime.Now);
-
-                    //try to send the snmp message
+                    //try to send the normal packet's snmp message
                     try
                     {
 
@@ -251,11 +261,18 @@ namespace OpenITTools_SNMP_Listener_Emailer
                             if (!File.Exists(bufferPath))
                             {
                                 // Create a file to write to.
-                                using (StreamWriter sw = File.AppendText(bufferPath))
+                                using (StreamWriter sw = File.CreateText(bufferPath))
                                 {
                                     sw.WriteLine(DateTime.Now + " ----- " + SNMPBody);
                                 }
                             }
+
+                            // the append outside of the if to create.
+                            using (StreamWriter sw = File.AppendText(bufferPath))
+                            {
+                                sw.WriteLine(DateTime.Now + " ----- " + SNMPBody);
+                            }
+
                         }
 
 
@@ -273,12 +290,17 @@ namespace OpenITTools_SNMP_Listener_Emailer
                             if (!File.Exists(bufferPath))
                             {
                                 // Create a file to write to.
-                                using (StreamWriter sw = File.AppendText(bufferPath))
+                                using (StreamWriter sw = File.CreateText(bufferPath))
                                 {
                                     sw.WriteLine(DateTime.Now + " ----- " + SNMPBody);
                                 }
                             }
 
+                            // the append outside of the if to create.
+                            using (StreamWriter sw = File.AppendText(bufferPath))
+                            {
+                                sw.WriteLine(DateTime.Now + " ----- " + SNMPBody);
+                            }
                         }
                         catch
                         {
